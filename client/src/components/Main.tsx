@@ -92,15 +92,14 @@ function Main() {
             <Record>
                 {/* 추측한 숫자를 객체를 가진 배열로 state에 저장하고, map으로 뿌릴 것 */}
                 {/* ex) [{ number: 123, strike: 1, ball: 2, out: 0 }] */}
-                {/* {strikeOut ? 
+                {strikeOut ? 
                 <h1>삼진아웃 !</h1> : 
-                <div>ex) 1 2 3 =&gt; 1s 2b 0out</div>
-                } */}
                 <div>{tryedAnswers.map((el, idx) => {
                     return <div key={idx}>
-                        {el.answer} =&gt; {el.count === '0S0B' && '3OUT'}
+                        <p>{el.answer} =&gt; {el.count === '0S0B' ? '3OUT' : el.count}</p>
                     </div>
                 })}</div>
+                }
             </Record>
         </>
     )
