@@ -6,10 +6,22 @@ const axios = require('axios');
 function Main() {
 
     const [isCreatedNumber, setIsCreatedNumber] = useState(false);
+    const [key, setKey] = useState(0);
+    const [answer, setAnswer] = useState();
+    const [tryedAnswers, setTryedAnswers] = useState<any[]>([]);
+    const [strikeOut, setStrikeOut] = useState(false);
+
+    const [forCleanUp, setForCleanUp] = useState(false);
 
     useEffect(()=>{
-        
-    }, [])
+        if(!forCleanUp){
+            setKey(Math.floor(Math.random() * 1000));
+        }
+        console.log('tryedAnswers : ', tryedAnswers);
+        return ()=>{
+            setForCleanUp(true);
+        }
+    }, [tryedAnswers])
 
 
     return (
@@ -32,12 +44,9 @@ function Main() {
                 onClick={()=>{
                     if(!isCreatedNumber){
                         alert('생성되었습니다. 게임을 시작하세요!');
-                        /*
-                            서버에서 난수를 생성하고 그 난수에 해쉬값으로 알고리즘을 돌린 KEY를 클라이언트에 전달해줌
-                            get ajax요청해서 난수를 만든후 그 key를 주자.
-                        */
+                    
                         axios
-                        .get('http://localhost:80/createrandumnumber')
+                        .get(`http://localhost:3001/createrandumnumber?key=${key}`)
                         .then((data : any) => {
                             console.log("data : ", data);
                         })
@@ -53,20 +62,45 @@ function Main() {
             <Container>
                 <div><strong>정답은 ?</strong></div>
                 <br></br>
-                <InputGuessNumber />
+                <InputGuessNumber 
+                value={answer ? answer : ''}
+                onChange={(e :any)=>{
+                    const { target: { value }} = e;
+                    setAnswer(value);
+                }}/>
                 <Button onClick={()=>{
-                    /*
-                        key와 추측한 정답을 서버에 보낸 후에 서버에서 key해쉬값을 알고리즘으로 돌려서
-                        둘이 맞다면 맞다고 서버에서 응답을 보내주고 아니면 아니라고 그리고 카운트를 보내줄것
-                        그 보낸 객체 카운트 => { number: 123, strike: 1, ball: 2, out: 0 }을 클라이언트 배열에 PUSH해서
-                        map으로 Record에서 뿌릴 것
-                    */
+                        /* 
+                            버튼을 누르면 서버로 키랑 정답 보내져서 키는 new Random(MersenneTwister19937.seed(key));로 정답을 확인함
+                            정답은 서버에서 확인하고 맞으면 맞다고 틀리면 { number: 123, strike: 1, ball: 2, out: 0 } 다음과 같은 객체를
+                            JSON으로 보내줌 그럼 그 보낸 객체를 배열에 담아서 뿌려줘야함 (AJAX으로)
+                        */
+                        const params = { answer }
+                        axios
+                        .post(`http://localhost:3001/isitRightNumber?key=${key}`, params)
+                        .then((data : any) => {
+                            console.log("data.data.result : ", data.data.result);
+                            if(data.data.result === '3S0B'){
+                                setStrikeOut(true);
+                            }
+                            setTryedAnswers([...tryedAnswers, { count: data.data.result, answer: answer}]);
+                        })
+                        .catch((error : any)=>{
+                            console.log(error);
+                        })
                 }}>제출</Button>
             </Container>
             <Record>
                 {/* 추측한 숫자를 객체를 가진 배열로 state에 저장하고, map으로 뿌릴 것 */}
                 {/* ex) [{ number: 123, strike: 1, ball: 2, out: 0 }] */}
+                {/* {strikeOut ? 
+                <h1>삼진아웃 !</h1> : 
                 <div>ex) 1 2 3 =&gt; 1s 2b 0out</div>
+                } */}
+                <div>{tryedAnswers.map((el, idx) => {
+                    return <div key={idx}>
+                        {el.answer} =&gt; {el.count === '0S0B' && '3OUT'}
+                    </div>
+                })}</div>
             </Record>
         </>
     )
