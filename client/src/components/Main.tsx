@@ -11,29 +11,63 @@ function Main() {
 
     const [isCreatedNumber, setIsCreatedNumber] = useState(false);
     const [key, setKey] = useState(0);
-    const [answer, setAnswer] = useState();
+    const [answer, setAnswer] = useState<any>();
     const [tryedAnswers, setTryedAnswers] = useState<any[]>([]);
     const [strikeOut, setStrikeOut] = useState(false);
 
-    const [forCleanUp, setForCleanUp] = useState(false);
-
-    useEffect(() => {
-        if (!forCleanUp) {
-            setKey(Math.floor(Math.random() * 1000));
+    const onSubmitAnswer = (e: any) => {
+        // e.preventdefault();
+        if (answer.length > 3) {
+            alert('3자리 수를 입력해주세요!');
+        } else {
+            const params = { answer }
+            console.log('key : ', key);
+            axios
+                .post(`http://localhost:3001/isitRightNumber?key=${key}`, params)
+                .then((data: any) => {
+                    if (data.data.result === '3S0B') {
+                        setStrikeOut(true);
+                    }
+                    setTryedAnswers([...tryedAnswers, { count: data.data.result, answer: answer }]);
+                })
+                .catch((error: any) => {
+                    console.log(error);
+                })
         }
-        console.log('tryedAnswers : ', tryedAnswers);
-        return () => {
-            setForCleanUp(true);
-        }
-    }, [tryedAnswers])
+    }
 
+    const onCreateRandumNumber = () => {
+        if (!isCreatedNumber) {
+            alert('생성되었습니다. 게임을 시작하세요!');
+            let _key = Math.floor(Math.random() * 1000);
+            setKey(_key);
+            axios
+                .get(`http://localhost:3001/createrandumnumber?key=${_key}`)
+                .then((data: any) => {
+                    console.log("data : ", data);
+                })
+                .catch((error: any) => {
+                    console.log(error);
+                })
+        }else{
+            setAnswer('');
+            setTryedAnswers(new Array());
+            setStrikeOut(false);
+        }
+        setIsCreatedNumber((prev) => !prev);
+    }
+
+    const onChange = (e: any) => {
+        const { target: { value } } = e;
+        setAnswer(value);
+    }
 
     return (
         <>
             <div style={{ marginLeft: '3vw' }}>
                 <h1>숫자야구게임</h1>
                 <div><strong>
-                    <div>숫자야구란 감춰진&lt;&gt; 3개의 숫자가 무엇인지 맞추는 게임입니다.</div>
+                    <div>숫자야구란 감춰진 3개의 숫자가 무엇인지 맞추는 게임입니다.</div>
                     <div>1) 3자리 숫자와 위치가 모두 맞아야 성공입니다.</div>
                     <div>2) 숫자는 0~9까지 구성되어 있으며, 각 숫자는 한번씩만 사용 가능합니다</div>
                     <div>3) 숫자와 자리의 위치가 맞으면 스트라이크(S), 숫자만 맞으면 볼(B) 입니다.</div>
@@ -45,52 +79,32 @@ function Main() {
                 </strong></div>
                 <Button
                     style={{ marginTop: '4vh' }}
-                    onClick={() => {
-                        if (!isCreatedNumber) {
-                            alert('생성되었습니다. 게임을 시작하세요!');
-
-                            axios
-                                .get(`http://localhost:3001/createrandumnumber?key=${key}`)
-                                .then((data: any) => {
-                                    console.log("data : ", data);
-                                })
-                                .catch((error: any) => {
-                                    console.log(error);
-                                })
-                        }
-                        setIsCreatedNumber((prev) => !prev);
-                    }}
+                    onClick={onCreateRandumNumber}
                 >{!isCreatedNumber ? '난수생성' : '초기화'}</Button>
                 {isCreatedNumber ? <div><strong>***</strong></div> : <div style={{}}>난수를 생성해서 게임을 시작하세요!</div>}
             </div>
             <Container>
-                <div><strong>정답은 ?</strong></div>
-                <br></br>
-                <InputGuessNumber
-                    value={answer ? answer : ''}
-                    onChange={(e: any) => {
-                        const { target: { value } } = e;
-                        setAnswer(value);
-                    }} />
-                <Button onClick={() => {
-                    const params = { answer }
-                    axios
-                        .post(`http://localhost:3001/isitRightNumber?key=${key}`, params)
-                        .then((data: any) => {
-                            console.log("data.data.result : ", data.data.result);
-                            if (data.data.result === '3S0B') {
-                                setStrikeOut(true);
-                            }
-                            setTryedAnswers([...tryedAnswers, { count: data.data.result, answer: answer }]);
-                        })
-                        .catch((error: any) => {
-                            console.log(error);
-                        })
-                }}>제출</Button>
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>정답은 ?</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Enter answer"
+                            value={answer ? answer : ''}
+                            onChange={onChange}
+                        />
+                        <Form.Text className="text-muted">
+
+                        </Form.Text>
+                    </Form.Group>
+                    <Button
+                        variant="primary"
+                        type="submit"
+                        onClick={onSubmitAnswer}
+                    >
+                        Submit
+                    </Button>
             </Container>
             <Record>
-                {/* 추측한 숫자를 객체를 가진 배열로 state에 저장하고, map으로 뿌릴 것 */}
-                {/* ex) [{ number: 123, strike: 1, ball: 2, out: 0 }] */}
                 {strikeOut ?
                     <h1>삼진아웃 !</h1> :
                     <div>{tryedAnswers.map((el, idx) => {
@@ -103,13 +117,6 @@ function Main() {
         </>
     )
 }
-// const Button = styled.button`
-//     border: 1px solid black;
-//     background-color: rgba(0,0,0,0);
-//     color: black;
-//     padding: 5px;
-//     margin-top: 2vh;
-// `
 
 const Record = styled.div`
     display: flex;
