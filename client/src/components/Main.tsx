@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Form } from 'react-bootstrap';
-
-
 const axios = require('axios');
-
-// react-bootstrap 쓸 것
 
 function Main() {
 
