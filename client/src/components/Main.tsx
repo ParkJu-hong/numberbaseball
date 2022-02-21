@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Button, Form } from 'react-bootstrap';
+import { Button, Form, Toast } from 'react-bootstrap';
 const axios = require('axios');
 
 function Main() {
@@ -10,14 +10,17 @@ function Main() {
     const [answer, setAnswer] = useState<any>();
     const [tryedAnswers, setTryedAnswers] = useState<any[]>([]);
     const [strikeOut, setStrikeOut] = useState(false);
+    const [showA, setShowA] = useState(true);
+
+    const toggleShowA = () => setShowA(!showA);
 
     const onSubmitAnswer = (e: any) => {
         // e.preventdefault();
         if (answer.length > 3) {
             alert('3자리 수를 입력해주세요!');
         } else {
-            const params = { answer }
-            console.log('key : ', key);
+            const params = { answer };
+
             axios
                 .post(`http://localhost:3001/isitRightNumber?key=${key}`, params)
                 .then((data: any) => {
@@ -34,7 +37,7 @@ function Main() {
 
     const onCreateRandumNumber = () => {
         if (!isCreatedNumber) {
-            alert('생성되었습니다. 게임을 시작하세요!');
+            toggleShowA();
             let _key = Math.floor(Math.random() * 1000);
             setKey(_key);
             axios
@@ -45,7 +48,7 @@ function Main() {
                 .catch((error: any) => {
                     console.log(error);
                 })
-        }else{
+        } else {
             setAnswer('');
             setTryedAnswers(new Array());
             setStrikeOut(false);
@@ -60,6 +63,26 @@ function Main() {
 
     return (
         <>
+            <Toast 
+            show={!showA}
+            onClose={toggleShowA}
+            style={{
+                position: 'fixed',
+                top: '20%',
+                left: '30%'
+            }}
+            >
+                <Toast.Header>
+                    <img
+                        src="holder.js/20x20?text=%20"
+                        className="rounded me-2"
+                        alt=""
+                    />
+                    <strong className="me-auto">숫자야구게임</strong>
+                </Toast.Header>
+                <Toast.Body>생성되었습니다. 게임을 시작하세요!</Toast.Body>
+            </Toast>
+
             <div style={{ marginLeft: '3vw' }}>
                 <h1>숫자야구게임</h1>
                 <div><strong>
@@ -80,25 +103,25 @@ function Main() {
                 {isCreatedNumber ? <div><strong>***</strong></div> : <div style={{}}>난수를 생성해서 게임을 시작하세요!</div>}
             </div>
             <Container>
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>정답은 ?</Form.Label>
-                        <Form.Control
-                            type="text"
-                            placeholder="Enter answer"
-                            value={answer ? answer : ''}
-                            onChange={onChange}
-                        />
-                        <Form.Text className="text-muted">
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>정답은 ?</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder="Enter answer"
+                        value={answer ? answer : ''}
+                        onChange={onChange}
+                    />
+                    <Form.Text className="text-muted">
 
-                        </Form.Text>
-                    </Form.Group>
-                    <Button
-                        variant="primary"
-                        type="submit"
-                        onClick={onSubmitAnswer}
-                    >
-                        Submit
-                    </Button>
+                    </Form.Text>
+                </Form.Group>
+                <Button
+                    variant="primary"
+                    type="submit"
+                    onClick={onSubmitAnswer}
+                >
+                    Submit
+                </Button>
             </Container>
             <Record>
                 {strikeOut ?
