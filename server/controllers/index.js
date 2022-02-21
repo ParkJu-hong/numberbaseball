@@ -18,31 +18,23 @@ function compare(secret, guess) {
 function mersenneTwister19937(key){
     const random = new Random(MersenneTwister19937.seed(key));
 
-
-    // 이 부분도 배열로 바꿀 것 ?
-    // 
-
-    const v1 = random.integer(1, 9);
-    let v2 = random.integer(1, 9);
-    while (v1 === v2) {
-        v2 = random.integer(1, 9);
-    }
-    let v3 = random.integer(1, 9);
-    while (v1 === v3 || v2 === v3) {
-        v3 = random.integer(1, 9);
-    }
-    let v4 = random.integer(1, 9);
-    while (v4 === v3 || v4 === v2 || v4 === v1) {
-        v4 = random.integer(1, 9);
-    }
-    let v5 = random.integer(1, 9);
-    while (v5 === v4 || v5 === v3 || v5 === v2 || v5 === v1) {
-        v5 = random.integer(1, 9);
-    }
+    let arr = new Array();
     
+    const createNumber = (_arr) => {
+        let tempValue = random.integer(1, 9);
+        while(1){
+            tempValue = random.integer(1, 9);
+            if(!_arr.includes(tempValue)){
+                return tempValue;
+            };
+        };
+    };
 
-    const secret = v1 * 10000 + v2 * 1000 + v3 * 100 + v4 * 10 + v5 * 1; 
-    return secret;
+    for(let i = 0; i < 5; i++){
+        arr.push(createNumber(arr));
+    };
+
+    return Number(arr.join(''));
 }
 
 module.exports = {

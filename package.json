@@ -1,0 +1,20 @@
+{
+  "name": "numberbaseball",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "common"
+  ],
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/ParkJu-hong/numberbaseball.git",
+  "author": "Park Juhong <bejejupark@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "concurrently -k \"yarn workspace server test\" \"yarn workspace client start\""
+  },
+  "dependencies": {
+    "concurrently": "^7.0.0"
+  }
+}
