@@ -3,28 +3,24 @@ const models = require('../models');
 const { Random, MersenneTwister19937 } = require('random-js');
 
 function compare(secret, guess) {
-    var bulls = 0;
-    var cows = 0;
-    var numbers = new Array(10);
-    for (var i = 0; i < 10; i++) {
-        numbers[i] = 0;
-    }
-    for (var i = 0; i < secret.length; i++) {
-        var s = secret.charCodeAt(i) - 48;
-        var g = guess.charCodeAt(i) - 48;
-        if (s == g) bulls++;
-        else {
-            if (numbers[s] < 0) cows++;
-            if (numbers[g] > 0) cows++;
-            numbers[s]++;
-            numbers[g]--;
+    let s = 0;
+    let b = 0;
+    for(let i = 0; i < secret.length; i++){
+        for(let j = 0; j < guess.length; j++){
+            if(secret[i] === guess[j] && i === j) s++;
+            else if(secret[i] === guess[j]) b++;
         }
     }
-    return bulls + "S" + cows + "B";
+
+    return `${s}S${b}B`;
 }
 
 function mersenneTwister19937(key){
     const random = new Random(MersenneTwister19937.seed(key));
+
+
+    // 이 부분도 배열로 바꿀 것 ?
+    // 
 
     const v1 = random.integer(1, 9);
     let v2 = random.integer(1, 9);
@@ -35,8 +31,17 @@ function mersenneTwister19937(key){
     while (v1 === v3 || v2 === v3) {
         v3 = random.integer(1, 9);
     }
+    let v4 = random.integer(1, 9);
+    while (v4 === v3 || v4 === v2 || v4 === v1) {
+        v4 = random.integer(1, 9);
+    }
+    let v5 = random.integer(1, 9);
+    while (v5 === v4 || v5 === v3 || v5 === v2 || v5 === v1) {
+        v5 = random.integer(1, 9);
+    }
+    
 
-    const secret = v1 * 100 + v2 * 10 + v3; 
+    const secret = v1 * 10000 + v2 * 1000 + v3 * 100 + v4 * 10 + v5 * 1; 
     return secret;
 }
 
@@ -56,11 +61,8 @@ module.exports = {
 
         const secret = mersenneTwister19937(key);
 
-        const secretString = secret.toString();
-        const guessString = guess.toString();
+        let count = compare(secret.toString(), guess.toString());
 
-        let count = compare(secretString, guessString);
-        
         res.json({ result: count });
     }
 }

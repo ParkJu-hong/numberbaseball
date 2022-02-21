@@ -17,22 +17,33 @@ function Main() {
     const toggleShowA = () => setShowA(!showA);
     const toggleShowB = () => setShowB(!showB);
     const toggleShowC = () => setShowC(!showC);
+    
+    const compare = () => {
+        if(answer[0] === answer[1] ||
+            answer[0] === answer[2] ||
+            answer[0] === answer[3] ||
+            answer[0] === answer[4] ||
+            answer[2] === answer[1] ||
+            answer[2] === answer[3] ||
+            answer[2] === answer[4] ||
+            answer[3] === answer[1] ||
+            answer[3] === answer[4] ||
+            answer[4] === answer[1] ||
+            answer.includes('0'))return true;
+        else return false;
+    } 
 
 
     const onSubmitAnswer = (e: any) => {
         // e.preventdefault();
         if (answer !== undefined) {
-            if (answer.length > 3) {
-                alert('3자리 수를 입력해주세요!');
+            if (answer.length > 5) {
+                alert('5자리 수를 입력해주세요!');
 
-            }else if (!isCreatedNumber) {
+            } else if (!isCreatedNumber) {
                 toggleShowC();
 
-            } else if (answer[0] === answer[1] ||
-                answer[1] === answer[2] ||
-                answer[0] === answer[2] ||
-                answer.includes('0')
-            ) {
+            } else if (compare()) {
                 toggleShowB();
             } else {
                 const params = { answer };
@@ -40,7 +51,7 @@ function Main() {
                 axios
                     .post(`http://localhost:3001/isitRightNumber?key=${key}`, params)
                     .then((data: any) => {
-                        if (data.data.result === '3S0B') {
+                        if (data.data.result === '5S0B') {
                             setStrikeOut(true);
                         }
                         setTryedAnswers([...tryedAnswers, { count: data.data.result, answer: answer }]);
@@ -141,15 +152,14 @@ function Main() {
             <div style={{ marginLeft: '3vw' }}>
                 <h1>숫자야구게임</h1>
                 <div><strong>
-                    <div>숫자야구란 감춰진 3개의 숫자가 무엇인지 맞추는 게임입니다.</div>
+                    <div>숫자야구란 감춰진 5개의 숫자가 무엇인지 맞추는 게임입니다.</div>
                     <div>1) 3자리 숫자와 위치가 모두 맞아야 성공입니다.</div>
                     <div>2) 숫자는 1~9까지 구성되어 있으며, 각 숫자는 한번씩만 사용 가능합니다</div>
                     <div>3) 숫자와 자리의 위치가 맞으면 스트라이크(S), 숫자만 맞으면 볼(B) 입니다.</div>
                     <div>4) 숫자가 하나도 맞지 않을 경우 아웃(OUT) 으로 표시됩니다.</div>
 
-                    <div>예시) 감춰진 숫자가 123 이라고 할 경우</div>
-                    <div>- a. 102 = 1S 1B</div>
-                    <div> - b. 124 = 2S</div>
+                    <div>예시) 감춰진 숫자가 12345 이라고 할 경우</div>
+                    <div> A - 15432 = 1S 4B</div>
                 </strong></div>
                 <Button
                     style={{ marginTop: '4vh' }}
@@ -179,7 +189,7 @@ function Main() {
                 </Button>
             </Container>
             <Record>
-                {strikeOut && <h1>삼진아웃!</h1>}
+                {strikeOut && <h1>정답!</h1>}
                 <ListGroup>{tryedAnswers.map((el, idx) => {
                     return <ListGroup.Item key={idx}>
                         <strong>{el.answer} =&gt; {el.count === '0S0B' ? '3OUT' : el.count}</strong>
