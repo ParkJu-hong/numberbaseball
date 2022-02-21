@@ -23,25 +23,30 @@ function compare(secret, guess) {
     return bulls + "S" + cows + "B";
 }
 
+function mersenneTwister19937(key){
+    const random = new Random(MersenneTwister19937.seed(key));
+
+    const v1 = random.integer(1, 9);
+    let v2 = random.integer(1, 9);
+    while (v1 === v2) {
+        v2 = random.integer(1, 9);
+    }
+    let v3 = random.integer(1, 9);
+    while (v1 === v3 || v2 === v3) {
+        v3 = random.integer(1, 9);
+    }
+
+    const secret = v1 * 100 + v2 * 10 + v3; 
+    return secret;
+}
+
 module.exports = {
     createRandumNumber: (req, res) => {
         const key = req.query.key;
 
-        const random = new Random(MersenneTwister19937.seed(key));
+        const secret = mersenneTwister19937(key);
 
-        const v1 = random.integer(1, 9);
-        let v2 = random.integer(1, 9);
-        while (v1 === v2) {
-            v2 = random.integer(1, 9);
-        }
-        let v3 = random.integer(1, 9);
-        while (v1 === v3 || v2 === v3) {
-            v3 = random.integer(1, 9);
-        }
-
-        let result = v1 * 100 + v2 * 10 + v3;
-
-        console.log("randumNumber : ", result);
+        console.log('정답 : ', secret);
 
         res.json({ result: 'Ok start' });
     },
@@ -49,26 +54,13 @@ module.exports = {
         const key = req.query.key;
         const guess = req.body.answer;
 
-        const random = new Random(MersenneTwister19937.seed(key));
+        const secret = mersenneTwister19937(key);
 
-        const v1 = random.integer(1, 9);
-        let v2 = random.integer(1, 9);
-        while (v1 === v2) {
-            v2 = random.integer(1, 9);
-        }
-        let v3 = random.integer(1, 9);
-        while (v1 === v3 || v2 === v3) {
-            v3 = random.integer(1, 9);
-        }
-
-        const secret = v1 * 100 + v2 * 10 + v3; 
         const secretString = secret.toString();
         const guessString = guess.toString();
 
         let count = compare(secretString, guessString);
-
-        console.log('randum을 나눠서 만든 숫자 : ', secret);
-
+        
         res.json({ result: count });
     }
 }

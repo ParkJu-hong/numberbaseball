@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Button, Form, Toast } from 'react-bootstrap';
+import { Button, Form, Toast, ListGroup } from 'react-bootstrap';
 const axios = require('axios');
 
 function Main() {
@@ -11,27 +11,44 @@ function Main() {
     const [tryedAnswers, setTryedAnswers] = useState<any[]>([]);
     const [strikeOut, setStrikeOut] = useState(false);
     const [showA, setShowA] = useState(true);
+    const [showB, setShowB] = useState(true);
+    const [showC, setShowC] = useState(true);
 
     const toggleShowA = () => setShowA(!showA);
+    const toggleShowB = () => setShowB(!showB);
+    const toggleShowC = () => setShowC(!showC);
+
 
     const onSubmitAnswer = (e: any) => {
         // e.preventdefault();
-        if (answer.length > 3) {
-            alert('3자리 수를 입력해주세요!');
-        } else {
-            const params = { answer };
+        if (answer !== undefined) {
+            if (answer.length > 3) {
+                alert('3자리 수를 입력해주세요!');
 
-            axios
-                .post(`http://localhost:3001/isitRightNumber?key=${key}`, params)
-                .then((data: any) => {
-                    if (data.data.result === '3S0B') {
-                        setStrikeOut(true);
-                    }
-                    setTryedAnswers([...tryedAnswers, { count: data.data.result, answer: answer }]);
-                })
-                .catch((error: any) => {
-                    console.log(error);
-                })
+            }else if (!isCreatedNumber) {
+                toggleShowC();
+
+            } else if (answer[0] === answer[1] ||
+                answer[1] === answer[2] ||
+                answer[0] === answer[2] ||
+                answer.includes('0')
+            ) {
+                toggleShowB();
+            } else {
+                const params = { answer };
+
+                axios
+                    .post(`http://localhost:3001/isitRightNumber?key=${key}`, params)
+                    .then((data: any) => {
+                        if (data.data.result === '3S0B') {
+                            setStrikeOut(true);
+                        }
+                        setTryedAnswers([...tryedAnswers, { count: data.data.result, answer: answer }]);
+                    })
+                    .catch((error: any) => {
+                        console.log(error);
+                    })
+            }
         }
     }
 
@@ -57,20 +74,20 @@ function Main() {
     }
 
     const onChange = (e: any) => {
-        const { target: { value } } = e;
+        let { target: { value } } = e;
         setAnswer(value);
     }
 
     return (
         <>
-            <Toast 
-            show={!showA}
-            onClose={toggleShowA}
-            style={{
-                position: 'fixed',
-                top: '20%',
-                left: '30%'
-            }}
+            <Toast
+                show={!showA}
+                onClose={toggleShowA}
+                style={{
+                    position: 'fixed',
+                    top: '2vh',
+                    left: '5vw'
+                }}
             >
                 <Toast.Header>
                     <img
@@ -82,13 +99,51 @@ function Main() {
                 </Toast.Header>
                 <Toast.Body>생성되었습니다. 게임을 시작하세요!</Toast.Body>
             </Toast>
+            <Toast
+                show={!showB}
+                onClose={toggleShowB}
+                style={{
+                    position: 'fixed',
+                    top: '2vh',
+                    left: '5vw'
+                }}
+            >
+                <Toast.Header>
+                    <img
+                        src="holder.js/20x20?text=%20"
+                        className="rounded me-2"
+                        alt=""
+                    />
+                    <strong className="me-auto">숫자야구게임</strong>
+                </Toast.Header>
+                <Toast.Body>0 또는 같은 숫자를 반복해서 쓰지 마세요!</Toast.Body>
+            </Toast>
+            <Toast
+                show={!showC}
+                onClose={toggleShowC}
+                style={{
+                    position: 'fixed',
+                    top: '2vh',
+                    left: '5vw'
+                }}
+            >
+                <Toast.Header>
+                    <img
+                        src="holder.js/20x20?text=%20"
+                        className="rounded me-2"
+                        alt=""
+                    />
+                    <strong className="me-auto">숫자야구게임</strong>
+                </Toast.Header>
+                <Toast.Body>숫자를 생성하세요!</Toast.Body>
+            </Toast>
 
             <div style={{ marginLeft: '3vw' }}>
                 <h1>숫자야구게임</h1>
                 <div><strong>
                     <div>숫자야구란 감춰진 3개의 숫자가 무엇인지 맞추는 게임입니다.</div>
                     <div>1) 3자리 숫자와 위치가 모두 맞아야 성공입니다.</div>
-                    <div>2) 숫자는 0~9까지 구성되어 있으며, 각 숫자는 한번씩만 사용 가능합니다</div>
+                    <div>2) 숫자는 1~9까지 구성되어 있으며, 각 숫자는 한번씩만 사용 가능합니다</div>
                     <div>3) 숫자와 자리의 위치가 맞으면 스트라이크(S), 숫자만 맞으면 볼(B) 입니다.</div>
                     <div>4) 숫자가 하나도 맞지 않을 경우 아웃(OUT) 으로 표시됩니다.</div>
 
@@ -99,8 +154,8 @@ function Main() {
                 <Button
                     style={{ marginTop: '4vh' }}
                     onClick={onCreateRandumNumber}
-                >{!isCreatedNumber ? '난수생성' : '초기화'}</Button>
-                {isCreatedNumber ? <div><strong>***</strong></div> : <div style={{}}>난수를 생성해서 게임을 시작하세요!</div>}
+                >{!isCreatedNumber ? '숫자생성' : '초기화'}</Button>
+                {isCreatedNumber ? <div><strong>***</strong></div> : <div>난수를 생성해서 게임을 시작하세요!</div>}
             </div>
             <Container>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -124,14 +179,12 @@ function Main() {
                 </Button>
             </Container>
             <Record>
-                {strikeOut ?
-                    <h1>삼진아웃 !</h1> :
-                    <div>{tryedAnswers.map((el, idx) => {
-                        return <div key={idx}>
-                            <p>{el.answer} =&gt; {el.count === '0S0B' ? '3OUT' : el.count}</p>
-                        </div>
-                    })}</div>
-                }
+                {strikeOut && <h1>삼진아웃!</h1>}
+                <ListGroup>{tryedAnswers.map((el, idx) => {
+                    return <ListGroup.Item key={idx}>
+                        <strong>{el.answer} =&gt; {el.count === '0S0B' ? '3OUT' : el.count}</strong>
+                    </ListGroup.Item>
+                })}</ListGroup>
             </Record>
         </>
     )
@@ -150,9 +203,6 @@ const Container = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-`
-const InputGuessNumber = styled.input`
-    font-size: 30px;
 `
 
 export default Main;
