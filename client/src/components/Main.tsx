@@ -17,25 +17,46 @@ function Main() {
     const toggleShowA = () => setShowA(!showA);
     const toggleShowB = () => setShowB(!showB);
     const toggleShowC = () => setShowC(!showC);
-    
+
+    const resetRandumNumber = () => {
+        axios
+            .get(`http://localhost:3001/deleterandumNumber`)
+            .then((data: any) => {
+                console.log("data : ", data);
+            })
+            .catch((error: any) => {
+                console.log(error);
+            });
+    };
+
     const compare = () => {
-        if(answer[0] === answer[1] ||
-            answer[0] === answer[2] ||
-            answer[0] === answer[3] ||
-            answer[0] === answer[4] ||
-            answer[2] === answer[1] ||
-            answer[2] === answer[3] ||
-            answer[2] === answer[4] ||
-            answer[3] === answer[1] ||
-            answer[3] === answer[4] ||
-            answer[4] === answer[1] ||
-            answer.includes('0'))return true;
-        else return false;
-    } 
+        let arrTemp = new Array();
+        for (let i = 0; i < 4; i++) {
+            for (let j = 1; j < 5; j++) {
+                if (i !== j && !arrTemp.includes(`${i}${j}`) && !arrTemp.includes(`${j}${i}`)) {
+                    arrTemp.push(`${i}${j}`);
+                    console.log(`${i}${j}`);
+                };
+            };
+        };
+
+        let i = 0;
+        while (1) {
+            if (arrTemp.length === i) {
+                break;
+            } else if (answer[arrTemp[i][0]] === answer[arrTemp[i][1]]) {
+                return true;
+            };
+            i++;
+        };
+
+        if (answer.includes('0')) return true;
+
+        return false;
+    }
 
 
     const onSubmitAnswer = (e: any) => {
-        // e.preventdefault();
         if (answer !== undefined) {
             if (answer.length > 5) {
                 alert('5자리 수를 입력해주세요!');
@@ -58,10 +79,10 @@ function Main() {
                     })
                     .catch((error: any) => {
                         console.log(error);
-                    })
-            }
-        }
-    }
+                    });
+            };
+        };
+    };
 
     const onCreateRandumNumber = () => {
         if (!isCreatedNumber) {
@@ -75,19 +96,20 @@ function Main() {
                 })
                 .catch((error: any) => {
                     console.log(error);
-                })
+                });
         } else {
+            resetRandumNumber();
             setAnswer('');
             setTryedAnswers(new Array());
             setStrikeOut(false);
-        }
+        };
         setIsCreatedNumber((prev) => !prev);
-    }
+    };
 
     const onChange = (e: any) => {
         let { target: { value } } = e;
         setAnswer(value);
-    }
+    };
 
     return (
         <>
@@ -192,7 +214,7 @@ function Main() {
                 {strikeOut && <h1>정답!</h1>}
                 <ListGroup>{tryedAnswers.map((el, idx) => {
                     return <ListGroup.Item key={idx}>
-                        <strong>{el.answer} =&gt; {el.count === '0S0B' ? '3OUT' : el.count}</strong>
+                        <strong>{el.answer} =&gt; {el.count}</strong>
                     </ListGroup.Item>
                 })}</ListGroup>
             </Record>
