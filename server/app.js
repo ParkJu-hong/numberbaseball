@@ -9,6 +9,7 @@ app.use(cors());
 app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({extended:true}));
 
+app.get('/', controllers.testController);
 app.get('/createrandumnumber', controllers.createRandumNumber);
 app.get('/deleterandumNumber', controllers.deleteRandumNumber);
 app.post('/isitRightNumber', controllers.isitRightNumber);

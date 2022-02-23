@@ -1,11 +1,19 @@
 const models = require('../models');
 // var CryptoJS = require("crypto-js");
 const { Random, MersenneTwister19937 } = require('random-js');
+const async = require('async');
+
 
 function createDBdecryptionKey(key) {
-    models.insertDecryptionKey((err, result) => {
-        console.log("createDBdecryptionKey result : ", result);
-    }, key);
+    models.insertDecryptionKey(() => { }, key);
+}
+
+function preReadDBdecryptionKey(){
+    let result;
+    return models.testfunction((err, _result) => {
+        result = _result[0].DECRYPTION_KEY;
+        return result;
+    });
 }
 
 function readDBdecryptionKey() {
@@ -18,28 +26,12 @@ function readDBdecryptionKey() {
                 reject(err);
             } else {
                 resolve(result);
-            }
+            };
         });
     });
 }
-
-function readDBdecryptionKey2(callback) {
-    let result;
-    models.testfunction((err, _result) => {
-        result = _result[0].DECRYPTION_KEY;
-
-        if (err) {
-            callback(err);
-        } else {
-            callback(null, result);
-        }
-    });
-}
-
 function deleteDBdecryptionKey(key) {
-    models.deleteDecryptionKey((err, result) => {
-        // console.log("deleteDBdecryptionKey result : ", result);
-    }, key);
+    models.deleteDecryptionKey(() => { }, key);
 }
 
 function compare(secret, guess) {
@@ -78,6 +70,11 @@ function mersenneTwister19937(key) {
 }
 
 module.exports = {
+    testController: (req, res) =>{
+        // yarn workspace server add async
+
+        res.json({result: 'OK'})
+    },
     createRandumNumber: (req, res) => {
         deleteDBdecryptionKey();
         let key = Math.floor(Math.random() * 10000);
@@ -86,14 +83,11 @@ module.exports = {
         res.json({ result: 'Ok start' });
     },
     isitRightNumber: (req, res) => {
-        /*
-        key = readDBdecryptionKey();
-        console.log("KEY 1 : ", key);
+        console.log('preReadDBdecryptionKey() : ', preReadDBdecryptionKey());
 
         readDBdecryptionKey().then(key => {
-            console.log("KEY 1 : ", key);
+            // console.log('key : ', key);
             const guess = req.body.answer;
-
             const secret = mersenneTwister19937(key);
             console.log('정답 : ', secret);
 
@@ -102,23 +96,7 @@ module.exports = {
             console.error(err);
             res.json({ result: false });
         });
-        */
 
-        readDBdecryptionKey2((err, result) => {
-            if (err) {
-                console.error(err);
-
-                res.json({ result: false });
-            } else {
-                console.log("KEY 1 : ", result);
-                const guess = req.body.answer;
-
-                const secret = mersenneTwister19937(result);
-                console.log('정답 : ', secret);
-
-                res.json({ result: compare(secret.toString(), guess.toString()) });
-            }
-        });
     },
     deleteRandumNumber: (req, res) => {
         deleteDBdecryptionKey();
@@ -126,3 +104,40 @@ module.exports = {
     }
 }
 
+/*
+readDBdecryptionKey2((err, result) => {
+    if (err) {
+        console.error(err);
+        res.json({ result: false });
+    } else {
+        const guess = req.body.answer;
+        const secret = mersenneTwister19937(result);
+        console.log('정답 : ', secret);
+        res.json({ result: compare(secret.toString(), guess.toString()) });
+    }
+});
+*/
+
+/*
+function preReadDBdecryptionKey(){
+    let result;
+    models.testfunction((err, _result) => {
+        result = _result[0].DECRYPTION_KEY;
+    });
+    return result;
+}
+*/
+/*
+function readDBdecryptionKey2(callback) {
+    let result;
+    models.testfunction((err, _result) => {
+        result = _result[0].DECRYPTION_KEY;
+
+        if (err) {
+            callback(err);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+*/
